@@ -1,0 +1,1299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SOS Tool for Ternary Homogeneous Symmetric Polynomials</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = {
+    theme: {
+        extend: {
+            colors: {
+                primary: {
+                    50: '#eff6ff',
+                    100: '#dbeafe',
+                    200: '#bfdbfe',
+                    300: '#93c5fd',
+                    400: '#60a5fa',
+                    500: '#3b82f6',
+                    600: '#2563eb',
+                    700: '#1d4ed8',
+                    800: '#1e40af',
+                    900: '#1e3a8a',
+                },
+                accent: {
+                    50: '#fdf4ff',
+                    100: '#fae8ff',
+                    200: '#f5d0fe',
+                    300: '#f0abfc',
+                    400: '#e879f9',
+                    500: '#d946ef',
+                    600: '#c026d3',
+                    700: '#a21caf',
+                    800: '#86198f',
+                    900: '#701a75',
+                },
+            },
+            fontFamily: {
+                sans: ['Inter', 'sans-serif'],
+                mono: ['JetBrains Mono', 'monospace'],
+            },
+        }
+    }
+}
+</script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+    body {
+        font-family: 'Inter', sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+    }
+    .glass {
+        background: rgba(255, 255, 255, 0.15);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+    }
+    .glass-dark {
+        background: rgba(0, 0, 0, 0.3);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .btn-glow {
+        transition: all 0.3s ease;
+        box-shadow: 0 0 20px rgba(59, 130, 246, 0.5);
+    }
+    .btn-glow:hover {
+        box-shadow: 0 0 30px rgba(59, 130, 246, 0.8);
+        transform: translateY(-2px);
+    }
+    .btn-glow:active {
+        transform: translateY(0);
+    }
+    .math-display {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 1.1rem;
+        line-height: 1.8;
+    }
+    .scrollbar-custom::-webkit-scrollbar {
+        width: 8px;
+    }
+    .scrollbar-custom::-webkit-scrollbar-track {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 4px;
+    }
+    .scrollbar-custom::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.3);
+        border-radius: 4px;
+    }
+    .scrollbar-custom::-webkit-scrollbar-thumb:hover {
+        background: rgba(255, 255, 255, 0.5);
+    }
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .fade-in {
+        animation: fadeIn 0.4s ease;
+    }
+    .pulse-border {
+        animation: pulse-border 2s infinite;
+    }
+    @keyframes pulse-border {
+        0%, 100% { border-color: rgba(255, 255, 255, 0.2); }
+        50% { border-color: rgba(255, 255, 255, 0.5); }
+    }
+</style>
+</head>
+<body class="text-white">
+
+<div class="min-h-screen flex flex-col">
+    <!-- Header -->
+    <header class="glass-dark py-6 px-8">
+        <div class="max-w-7xl mx-auto flex items-center justify-between">
+            <div class="flex items-center gap-4">
+                <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-primary-400 to-accent-500 flex items-center justify-center shadow-lg">
+                    <i class="fas fa-square-root-variable text-2xl text-white"></i>
+                </div>
+                <div>
+                    <h1 class="text-2xl font-bold" id="title-main">三元齐次轮换对称多项式 SOS 配凑工具</h1>
+                    <p class="text-sm text-white/70" id="title-sub">SOS Tool for Ternary Homogeneous Symmetric Polynomials</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-3">
+                <button id="langToggle" class="glass px-4 py-2 rounded-xl hover:bg-white/20 transition-all flex items-center gap-2">
+                    <i class="fas fa-language"></i>
+                    <span id="langLabel">English</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-1 max-w-7xl mx-auto w-full px-8 py-8">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            
+            <!-- Left Panel: Action Buttons -->
+            <div class="lg:col-span-1">
+                <div class="glass rounded-2xl p-6 sticky top-6">
+                    <h2 class="text-lg font-bold mb-4 flex items-center gap-2" id="menu-title">
+                        <i class="fas fa-bars text-primary-300"></i>
+                        <span id="menu-label">主菜单 / Main Menu</span>
+                    </h2>
+                    <div class="space-y-3">
+                        <button onclick="showPanel('new')" class="w-full glass-dark hover:bg-white/20 transition-all rounded-xl p-4 text-left flex items-center gap-3 group">
+                            <div class="w-10 h-10 rounded-lg bg-primary-500/30 flex items-center justify-center group-hover:bg-primary-500/50 transition-all">
+                                <i class="fas fa-plus text-primary-300"></i>
+                            </div>
+                            <div>
+                                <div class="font-semibold" id="btn-new">新建多项式</div>
+                                <div class="text-xs text-white/60" id="btn-new-sub">New polynomial</div>
+                            </div>
+                        </button>
+
+                        <button onclick="showPanel('input')" class="w-full glass-dark hover:bg-white/20 transition-all rounded-xl p-4 text-left flex items-center gap-3 group">
+                            <div class="w-10 h-10 rounded-lg bg-accent-500/30 flex items-center justify-center group-hover:bg-accent-500/50 transition-all">
+                                <i class="fas fa-keyboard text-accent-300"></i>
+                            </div>
+                            <div>
+                                <div class="font-semibold" id="btn-input">输入多项式</div>
+                                <div class="text-xs text-white/60" id="btn-input-sub">Input polynomial</div>
+                            </div>
+                        </button>
+
+                        <button onclick="showPanel('ops')" class="w-full glass-dark hover:bg-white/20 transition-all rounded-xl p-4 text-left flex items-center gap-3 group">
+                            <div class="w-10 h-10 rounded-lg bg-green-500/30 flex items-center justify-center group-hover:bg-green-500/50 transition-all">
+                                <i class="fas fa-calculator text-green-300"></i>
+                            </div>
+                            <div>
+                                <div class="font-semibold" id="btn-ops">多项式运算</div>
+                                <div class="text-xs text-white/60" id="btn-ops-sub">Polynomial operations</div>
+                            </div>
+                        </button>
+
+                        <button onclick="showPanel('sos')" class="w-full glass-dark hover:bg-white/20 transition-all rounded-xl p-4 text-left flex items-center gap-3 group">
+                            <div class="w-10 h-10 rounded-lg bg-orange-500/30 flex items-center justify-center group-hover:bg-orange-500/50 transition-all">
+                                <i class="fas fa-puzzle-piece text-orange-300"></i>
+                            </div>
+                            <div>
+                                <div class="font-semibold" id="btn-sos">SOS 配凑</div>
+                                <div class="text-xs text-white/60" id="btn-sos-sub">SOS decomposition</div>
+                            </div>
+                        </button>
+
+                        <button onclick="showPanel('latex')" class="w-full glass-dark hover:bg-white/20 transition-all rounded-xl p-4 text-left flex items-center gap-3 group">
+                            <div class="w-10 h-10 rounded-lg bg-purple-500/30 flex items-center justify-center group-hover:bg-purple-500/50 transition-all">
+                                <i class="fas fa-file-export text-purple-300"></i>
+                            </div>
+                            <div>
+                                <div class="font-semibold" id="btn-latex">LaTeX 输出</div>
+                                <div class="text-xs text-white/60" id="btn-latex-sub">Output LaTeX</div>
+                            </div>
+                        </button>
+
+                        <button onclick="showPanel('display')" class="w-full glass-dark hover:bg-white/20 transition-all rounded-xl p-4 text-left flex items-center gap-3 group">
+                            <div class="w-10 h-10 rounded-lg bg-pink-500/30 flex items-center justify-center group-hover:bg-pink-500/50 transition-all">
+                                <i class="fas fa-eye text-pink-300"></i>
+                            </div>
+                            <div>
+                                <div class="font-semibold" id="btn-display">显示多项式</div>
+                                <div class="text-xs text-white/60" id="btn-display-sub">Display polynomial</div>
+                            </div>
+                        </button>
+
+                        <button onclick="listPolynomials()" class="w-full glass-dark hover:bg-white/20 transition-all rounded-xl p-4 text-left flex items-center gap-3 group">
+                            <div class="w-10 h-10 rounded-lg bg-cyan-500/30 flex items-center justify-center group-hover:bg-cyan-500/50 transition-all">
+                                <i class="fas fa-list text-cyan-300"></i>
+                            </div>
+                            <div>
+                                <div class="font-semibold" id="btn-list">列出所有多项式</div>
+                                <div class="text-xs text-white/60" id="btn-list-sub">List all polynomials</div>
+                            </div>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Panel: Content Area -->
+            <div class="lg:col-span-2">
+                <div class="glass rounded-2xl p-6 min-h-[600px]">
+                    
+                    <!-- New Polynomial Panel -->
+                    <div id="panel-new" class="hidden">
+                        <h2 class="text-xl font-bold mb-6 flex items-center gap-2">
+                            <i class="fas fa-plus text-primary-300"></i>
+                            <span id="new-title">新建多项式</span>
+                        </h2>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium mb-2" id="new-name-label">多项式名称 / Polynomial Name</label>
+                                <input type="text" id="new-name" class="w-full glass-dark rounded-xl px-4 py-3 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-primary-400" placeholder="e.g. F, G, P1...">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-2" id="new-degree-label">次数 / Degree</label>
+                                <input type="number" id="new-degree" min="0" class="w-full glass-dark rounded-xl px-4 py-3 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-primary-400" placeholder="e.g. 4, 6, 8...">
+                            </div>
+                            <button onclick="createPolynomial()" class="btn-glow w-full bg-gradient-to-r from-primary-500 to-primary-600 rounded-xl py-3 font-semibold">
+                                <i class="fas fa-check mr-2"></i><span id="new-create-btn">创建 / Create</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Input Polynomial Panel -->
+                    <div id="panel-input" class="hidden">
+                        <h2 class="text-xl font-bold mb-6 flex items-center gap-2">
+                            <i class="fas fa-keyboard text-accent-300"></i>
+                            <span id="input-title">输入多项式</span>
+                        </h2>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium mb-2" id="input-name-label">多项式名称 / Polynomial Name</label>
+                                <input type="text" id="input-name" class="w-full glass-dark rounded-xl px-4 py-3 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-accent-400" placeholder="e.g. F, G, P1...">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-2" id="input-degree-label">次数 / Degree</label>
+                                <input type="number" id="input-degree" min="0" class="w-full glass-dark rounded-xl px-4 py-3 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-accent-400" placeholder="e.g. 4, 6, 8...">
+                            </div>
+                            <div id="input-coefficients" class="space-y-3"></div>
+                            <button onclick="inputPolynomial()" class="btn-glow w-full bg-gradient-to-r from-accent-500 to-accent-600 rounded-xl py-3 font-semibold">
+                                <i class="fas fa-save mr-2"></i><span id="input-save-btn">保存 / Save</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Operations Panel -->
+                    <div id="panel-ops" class="hidden">
+                        <h2 class="text-xl font-bold mb-6 flex items-center gap-2">
+                            <i class="fas fa-calculator text-green-300"></i>
+                            <span id="ops-title">多项式运算</span>
+                        </h2>
+                        <div class="grid grid-cols-2 gap-3 mb-6">
+                            <button onclick="setOpType('assign')" id="op-assign-btn" class="glass-dark hover:bg-white/20 transition-all rounded-xl p-4 text-center">
+                                <i class="fas fa-equals text-2xl mb-2"></i>
+                                <div class="font-semibold" id="op-assign-label">赋值</div>
+                                <div class="text-xs text-white/60">dest = src</div>
+                            </button>
+                            <button onclick="setOpType('add')" id="op-add-btn" class="glass-dark hover:bg-white/20 transition-all rounded-xl p-4 text-center">
+                                <i class="fas fa-plus text-2xl mb-2"></i>
+                                <div class="font-semibold" id="op-add-label">加法</div>
+                                <div class="text-xs text-white/60">dest = src1 + src2</div>
+                            </button>
+                            <button onclick="setOpType('sub')" id="op-sub-btn" class="glass-dark hover:bg-white/20 transition-all rounded-xl p-4 text-center">
+                                <i class="fas fa-minus text-2xl mb-2"></i>
+                                <div class="font-semibold" id="op-sub-label">减法</div>
+                                <div class="text-xs text-white/60">dest = src1 - src2</div>
+                            </button>
+                            <button onclick="setOpType('mul')" id="op-mul-btn" class="glass-dark hover:bg-white/20 transition-all rounded-xl p-4 text-center">
+                                <i class="fas fa-times text-2xl mb-2"></i>
+                                <div class="font-semibold" id="op-mul-label">乘法</div>
+                                <div class="text-xs text-white/60">dest = src1 * src2</div>
+                            </button>
+                        </div>
+                        <div id="op-form" class="space-y-4 hidden">
+                            <div>
+                                <label class="block text-sm font-medium mb-2" id="op-dest-label">目标多项式 / Destination</label>
+                                <input type="text" id="op-dest" class="w-full glass-dark rounded-xl px-4 py-3 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-green-400" placeholder="dest name">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-2" id="op-src1-label">源多项式1 / Source 1</label>
+                                <input type="text" id="op-src1" class="w-full glass-dark rounded-xl px-4 py-3 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-green-400" placeholder="src1 name">
+                            </div>
+                            <div id="op-src2-container" class="hidden">
+                                <label class="block text-sm font-medium mb-2" id="op-src2-label">源多项式2 / Source 2</label>
+                                <input type="text" id="op-src2" class="w-full glass-dark rounded-xl px-4 py-3 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-green-400" placeholder="src2 name">
+                            </div>
+                            <button onclick="executeOp()" class="btn-glow w-full bg-gradient-to-r from-green-500 to-green-600 rounded-xl py-3 font-semibold">
+                                <i class="fas fa-play mr-2"></i><span id="op-execute-btn">执行 / Execute</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- SOS Panel -->
+                    <div id="panel-sos" class="hidden">
+                        <h2 class="text-xl font-bold mb-6 flex items-center gap-2">
+                            <i class="fas fa-puzzle-piece text-orange-300"></i>
+                            <span id="sos-title">SOS 配凑</span>
+                        </h2>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium mb-2" id="sos-name-label">多项式名称 / Polynomial Name</label>
+                                <input type="text" id="sos-name" class="w-full glass-dark rounded-xl px-4 py-3 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-orange-400" placeholder="polynomial name">
+                            </div>
+                            <button onclick="decomposeSOS()" class="btn-glow w-full bg-gradient-to-r from-orange-500 to-orange-600 rounded-xl py-3 font-semibold">
+                                <i class="fas fa-magic mr-2"></i><span id="sos-decompose-btn">配凑 / Decompose</span>
+                            </button>
+                            <div id="sos-result" class="hidden mt-6">
+                                <div class="glass-dark rounded-xl p-4">
+                                    <h3 class="font-semibold mb-3" id="sos-result-title">结果 / Result</h3>
+                                    <div id="sos-output" class="math-display text-sm overflow-x-auto scrollbar-custom"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- LaTeX Panel -->
+                    <div id="panel-latex" class="hidden">
+                        <h2 class="text-xl font-bold mb-6 flex items-center gap-2">
+                            <i class="fas fa-file-export text-purple-300"></i>
+                            <span id="latex-title">LaTeX 输出</span>
+                        </h2>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium mb-2" id="latex-name-label">多项式名称 / Polynomial Name</label>
+                                <input type="text" id="latex-name" class="w-full glass-dark rounded-xl px-4 py-3 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-purple-400" placeholder="polynomial name">
+                            </div>
+                            <div class="grid grid-cols-2 gap-3">
+                                <button onclick="outputLaTeX(1)" class="glass-dark hover:bg-white/20 transition-all rounded-xl p-3 text-center">
+                                    <i class="fas fa-expand mr-1"></i><span id="latex-expanded-btn">展开式</span>
+                                </button>
+                                <button onclick="outputLaTeX(2)" class="glass-dark hover:bg-white/20 transition-all rounded-xl p-3 text-center">
+                                    <i class="fas fa-sync-alt mr-1"></i><span id="latex-sym-btn">对称和形式</span>
+                                </button>
+                                <button onclick="outputLaTeX(3)" class="glass-dark hover:bg-white/20 transition-all rounded-xl p-3 text-center">
+                                    <i class="fas fa-puzzle-piece mr-1"></i><span id="latex-sos-btn">SOS 分解</span>
+                                </button>
+                                <button onclick="outputLaTeX(4)" class="glass-dark hover:bg-white/20 transition-all rounded-xl p-3 text-center">
+                                    <i class="fas fa-layer-group mr-1"></i><span id="latex-all-btn">全部</span>
+                                </button>
+                            </div>
+                            <div id="latex-result" class="hidden mt-6">
+                                <div class="glass-dark rounded-xl p-4">
+                                    <div class="flex items-center justify-between mb-3">
+                                        <h3 class="font-semibold" id="latex-output-title">LaTeX 输出 / LaTeX Output</h3>
+                                        <button onclick="copyLaTeX()" class="text-purple-300 hover:text-purple-200 transition-all">
+                                            <i class="fas fa-copy mr-1"></i><span id="latex-copy-btn">复制</span>
+                                        </button>
+                                    </div>
+                                    <pre id="latex-output" class="math-display text-sm overflow-x-auto scrollbar-custom whitespace-pre-wrap"></pre>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Display Panel -->
+                    <div id="panel-display" class="hidden">
+                        <h2 class="text-xl font-bold mb-6 flex items-center gap-2">
+                            <i class="fas fa-eye text-pink-300"></i>
+                            <span id="display-title">显示多项式</span>
+                        </h2>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium mb-2" id="display-name-label">多项式名称 / Polynomial Name</label>
+                                <input type="text" id="display-name" class="w-full glass-dark rounded-xl px-4 py-3 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-pink-400" placeholder="polynomial name">
+                            </div>
+                            <button onclick="displayPolynomial()" class="btn-glow w-full bg-gradient-to-r from-pink-500 to-pink-600 rounded-xl py-3 font-semibold">
+                                <i class="fas fa-search mr-2"></i><span id="display-show-btn">显示 / Show</span>
+                            </button>
+                            <div id="display-result" class="hidden mt-6">
+                                <div class="glass-dark rounded-xl p-4">
+                                    <h3 class="font-semibold mb-3" id="display-result-title">多项式信息 / Polynomial Info</h3>
+                                    <div id="display-output" class="math-display text-sm"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- List Panel -->
+                    <div id="panel-list" class="hidden">
+                        <h2 class="text-xl font-bold mb-6 flex items-center gap-2">
+                            <i class="fas fa-list text-cyan-300"></i>
+                            <span id="list-title">所有多项式</span>
+                        </h2>
+                        <div id="list-output" class="space-y-2"></div>
+                    </div>
+
+                    <!-- Welcome Panel (default) -->
+                    <div id="panel-welcome" class="">
+                        <div class="text-center py-12">
+                            <div class="w-24 h-24 mx-auto mb-6 rounded-3xl bg-gradient-to-br from-primary-400 to-accent-500 flex items-center justify-center shadow-2xl">
+                                <i class="fas fa-square-root-variable text-5xl text-white"></i>
+                            </div>
+                            <h2 class="text-2xl font-bold mb-3" id="welcome-title">欢迎使用 SOS 配凑工具</h2>
+                            <p class="text-white/70 mb-6" id="welcome-sub">Welcome to SOS Decomposition Tool</p>
+                            <div class="glass-dark rounded-2xl p-6 max-w-md mx-auto text-left">
+                                <h3 class="font-semibold mb-3 flex items-center gap-2">
+                                    <i class="fas fa-info-circle text-primary-300"></i>
+                                    <span id="features-title">功能特性 / Features</span>
+                                </h3>
+                                <ul class="space-y-2 text-sm text-white/80">
+                                    <li class="flex items-start gap-2"><i class="fas fa-check text-green-400 mt-1"></i><span id="feat1">三元齐次对称多项式的输入与管理</span></li>
+                                    <li class="flex items-start gap-2"><i class="fas fa-check text-green-400 mt-1"></i><span id="feat2">多项式运算：赋值、加法、减法、乘法</span></li>
+                                    <li class="flex items-start gap-2"><i class="fas fa-check text-green-400 mt-1"></i><span id="feat3">SOS 分解：F = Sa(a-b)² + Sb(b-c)² + Sc(c-a)²</span></li>
+                                    <li class="flex items-start gap-2"><i class="fas fa-check text-green-400 mt-1"></i><span id="feat4">LaTeX 格式输出，一键复制</span></li>
+                                    <li class="flex items-start gap-2"><i class="fas fa-check text-green-400 mt-1"></i><span id="feat5">中英双语支持</span></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="glass-dark py-4 px-8 mt-auto">
+        <div class="max-w-7xl mx-auto text-center text-white/60 text-sm">
+            <span id="footer-text">三元齐次轮换对称多项式 SOS 配凑工具 | SOS Tool for Ternary Homogeneous Symmetric Polynomials</span>
+        </div>
+    </footer>
+</div>
+
+<!-- Toast Notification -->
+<div id="toast" class="fixed bottom-8 right-8 glass rounded-xl px-6 py-4 shadow-2xl hidden items-center gap-3 z-50">
+    <i id="toast-icon" class="fas fa-check-circle text-green-400 text-xl"></i>
+    <span id="toast-message" class="font-medium"></span>
+</div>
+
+<script>
+// ==================== Language Support ====================
+let g_chinese = true;
+
+const i18n = {
+    'title-main': { zh: '三元齐次轮换对称多项式 SOS 配凑工具', en: 'SOS Tool for Ternary Homogeneous Symmetric Polynomials' },
+    'title-sub': { zh: '', en: '' },
+    'menu-label': { zh: '主菜单', en: 'Main Menu' },
+    'btn-new': { zh: '新建多项式', en: 'New Polynomial' },
+    'btn-new-sub': { zh: '新建多项式', en: 'New polynomial' },
+    'btn-input': { zh: '输入多项式', en: 'Input Polynomial' },
+    'btn-input-sub': { zh: '输入多项式', en: 'Input polynomial' },
+    'btn-ops': { zh: '多项式运算', en: 'Operations' },
+    'btn-ops-sub': { zh: '多项式运算', en: 'Polynomial operations' },
+    'btn-sos': { zh: 'SOS 配凑', en: 'SOS Decomposition' },
+    'btn-sos-sub': { zh: 'SOS 配凑', en: 'SOS decomposition' },
+    'btn-latex': { zh: 'LaTeX 输出', en: 'LaTeX Output' },
+    'btn-latex-sub': { zh: 'LaTeX 输出', en: 'Output LaTeX' },
+    'btn-display': { zh: '显示多项式', en: 'Display' },
+    'btn-display-sub': { zh: '显示多项式', en: 'Display polynomial' },
+    'btn-list': { zh: '列出所有多项式', en: 'List All' },
+    'btn-list-sub': { zh: '列出所有多项式', en: 'List all polynomials' },
+    'new-title': { zh: '新建多项式', en: 'New Polynomial' },
+    'new-name-label': { zh: '多项式名称', en: 'Polynomial Name' },
+    'new-degree-label': { zh: '次数', en: 'Degree' },
+    'new-create-btn': { zh: '创建', en: 'Create' },
+    'input-title': { zh: '输入多项式', en: 'Input Polynomial' },
+    'input-name-label': { zh: '多项式名称', en: 'Polynomial Name' },
+    'input-degree-label': { zh: '次数', en: 'Degree' },
+    'input-save-btn': { zh: '保存', en: 'Save' },
+    'ops-title': { zh: '多项式运算', en: 'Polynomial Operations' },
+    'op-assign-label': { zh: '赋值', en: 'Assign' },
+    'op-add-label': { zh: '加法', en: 'Add' },
+    'op-sub-label': { zh: '减法', en: 'Subtract' },
+    'op-mul-label': { zh: '乘法', en: 'Multiply' },
+    'op-dest-label': { zh: '目标多项式', en: 'Destination' },
+    'op-src1-label': { zh: '源多项式1', en: 'Source 1' },
+    'op-src2-label': { zh: '源多项式2', en: 'Source 2' },
+    'op-execute-btn': { zh: '执行', en: 'Execute' },
+    'sos-title': { zh: 'SOS 配凑', en: 'SOS Decomposition' },
+    'sos-name-label': { zh: '多项式名称', en: 'Polynomial Name' },
+    'sos-decompose-btn': { zh: '配凑', en: 'Decompose' },
+    'sos-result-title': { zh: '结果', en: 'Result' },
+    'latex-title': { zh: 'LaTeX 输出', en: 'LaTeX Output' },
+    'latex-name-label': { zh: '多项式名称', en: 'Polynomial Name' },
+    'latex-expanded-btn': { zh: '展开式', en: 'Expanded' },
+    'latex-sym-btn': { zh: '对称和形式', en: 'Symmetric' },
+    'latex-sos-btn': { zh: 'SOS 分解', en: 'SOS' },
+    'latex-all-btn': { zh: '全部', en: 'All' },
+    'latex-output-title': { zh: 'LaTeX 输出', en: 'LaTeX Output' },
+    'latex-copy-btn': { zh: '复制', en: 'Copy' },
+    'display-title': { zh: '显示多项式', en: 'Display Polynomial' },
+    'display-name-label': { zh: '多项式名称', en: 'Polynomial Name' },
+    'display-show-btn': { zh: '显示', en: 'Show' },
+    'display-result-title': { zh: '多项式信息', en: 'Polynomial Info' },
+    'list-title': { zh: '所有多项式', en: 'All Polynomials' },
+    'welcome-title': { zh: '欢迎使用 SOS 配凑工具', en: 'Welcome to SOS Tool' },
+    'welcome-sub': { zh: '', en: 'Welcome to SOS Decomposition Tool' },
+    'features-title': { zh: '功能特性', en: 'Features' },
+    'feat1': { zh: '三元齐次对称多项式的输入与管理', en: 'Input and manage ternary homogeneous symmetric polynomials' },
+    'feat2': { zh: '多项式运算：赋值、加法、减法、乘法', en: 'Operations: assign, add, subtract, multiply' },
+    'feat3': { zh: 'SOS 分解：F = Sa(a-b)² + Sb(b-c)² + Sc(c-a)²', en: 'SOS: F = Sa(a-b)² + Sb(b-c)² + Sc(c-a)²' },
+    'feat4': { zh: 'LaTeX 格式输出，一键复制', en: 'LaTeX output with one-click copy' },
+    'feat5': { zh: '中英双语支持', en: 'Bilingual support (CN/EN)' },
+    'footer-text': { zh: '三元齐次轮换对称多项式 SOS 配凑工具', en: 'SOS Tool for Ternary Homogeneous Symmetric Polynomials' },
+};
+
+function updateLanguage() {
+    for (const [id, texts] of Object.entries(i18n)) {
+        const elem = document.getElementById(id);
+        if (elem) {
+            elem.textContent = g_chinese ? texts.zh : texts.en;
+        }
+    }
+    document.getElementById('langLabel').textContent = g_chinese ? 'English' : '中文';
+}
+
+// ==================== Utility Functions ====================
+function intToString(n) { return n.toString(); }
+
+function absInt(x) { return Math.abs(x); }
+
+function monomialToString(i, j, k) {
+    let s = '';
+    if (i > 0) { s += 'a'; if (i > 1) { s += '^' + i; } }
+    if (j > 0) { s += 'b'; if (j > 1) { s += '^' + j; } }
+    if (k > 0) { s += 'c'; if (k > 1) { s += '^' + k; } }
+    if (s === '') s = '1';
+    return s;
+}
+
+function monomialToLaTeX(i, j, k) {
+    let s = '';
+    if (i > 0) { s += 'a'; if (i > 1) { s += '^{' + i + '}'; } }
+    if (j > 0) { s += 'b'; if (j > 1) { s += '^{' + j + '}'; } }
+    if (k > 0) { s += 'c'; if (k > 1) { s += '^{' + k + '}'; } }
+    if (s === '') s = '1';
+    return s;
+}
+
+function enumeratePartitions(n) {
+    const parts = [];
+    for (let i = n; i >= 0; --i) {
+        for (let j = Math.min(i, n - i); j >= 0; --j) {
+            const k = n - i - j;
+            if (k >= 0 && j >= k) {
+                parts.push([i, j, k]);
+            }
+        }
+    }
+    return parts;
+}
+
+function countOccurrences(i, j, k) {
+    const perm = [[0,1,2],[0,2,1],[1,0,2],[1,2,0],[2,0,1],[2,1,0]];
+    let cnt = 0;
+    for (let p = 0; p < 6; ++p) {
+        const exp = [0, 0, 0];
+        exp[perm[p][0]] = i; exp[perm[p][1]] = j; exp[perm[p][2]] = k;
+        if (exp[0] === i && exp[1] === j && exp[2] === k) ++cnt;
+    }
+    return cnt;
+}
+
+function expKey(exp) {
+    return exp.join(',');
+}
+
+function polyMultiply(p1, p2) {
+    const res = {};
+    for (const [k1, v1] of Object.entries(p1)) {
+        if (v1 === 0) continue;
+        const e1 = k1.split(',').map(Number);
+        for (const [k2, v2] of Object.entries(p2)) {
+            if (v2 === 0) continue;
+            const e2 = k2.split(',').map(Number);
+            const exp = [e1[0] + e2[0], e1[1] + e2[1], e1[2] + e2[2]];
+            const key = expKey(exp);
+            res[key] = (res[key] || 0) + v1 * v2;
+        }
+    }
+    return res;
+}
+
+function cyclicRotate(poly, shift) {
+    const res = {};
+    for (const [k, v] of Object.entries(poly)) {
+        if (v === 0) continue;
+        const exp = k.split(',').map(Number);
+        let nexp;
+        if (shift === 0) nexp = [...exp];
+        else if (shift === 1) nexp = [exp[2], exp[0], exp[1]];
+        else nexp = [exp[1], exp[2], exp[0]];
+        const key = expKey(nexp);
+        res[key] = (res[key] || 0) + v;
+    }
+    return res;
+}
+
+function printPoly(poly) {
+    const items = [];
+    for (const [k, v] of Object.entries(poly)) {
+        if (v !== 0) items.push({ exp: k.split(',').map(Number), coeff: v });
+    }
+    if (items.length === 0) return '0';
+    items.sort((a, b) => {
+        if (a.exp[0] !== b.exp[0]) return b.exp[0] - a.exp[0];
+        if (a.exp[1] !== b.exp[1]) return b.exp[1] - a.exp[1];
+        return b.exp[2] - a.exp[2];
+    });
+    let result = '';
+    let first = true;
+    for (const item of items) {
+        const c = item.coeff;
+        if (c === 0) continue;
+        const mono = monomialToString(item.exp[0], item.exp[1], item.exp[2]);
+        if (first) {
+            if (c < 0) result += '-';
+            if (absInt(c) !== 1 || mono === '1') result += absInt(c);
+            result += mono;
+            first = false;
+        } else {
+            if (c > 0) result += ' + '; else result += ' - ';
+            if (absInt(c) !== 1 || mono === '1') result += absInt(c);
+            result += mono;
+        }
+    }
+    return result;
+}
+
+function polyToLaTeX(poly) {
+    const items = [];
+    for (const [k, v] of Object.entries(poly)) {
+        if (v !== 0) items.push({ exp: k.split(',').map(Number), coeff: v });
+    }
+    if (items.length === 0) return '0';
+    items.sort((a, b) => {
+        if (a.exp[0] !== b.exp[0]) return b.exp[0] - a.exp[0];
+        if (a.exp[1] !== b.exp[1]) return b.exp[1] - a.exp[1];
+        return b.exp[2] - a.exp[2];
+    });
+    let res = '';
+    let first = true;
+    for (const item of items) {
+        const c = item.coeff;
+        if (c === 0) continue;
+        const mono = monomialToLaTeX(item.exp[0], item.exp[1], item.exp[2]);
+        if (first) {
+            if (c < 0) res += '-';
+            if (absInt(c) !== 1 || mono === '1') res += absInt(c);
+            res += mono;
+            first = false;
+        } else {
+            if (c > 0) res += '+'; else res += '-';
+            if (absInt(c) !== 1 || mono === '1') res += absInt(c);
+            res += mono;
+        }
+    }
+    return res;
+}
+
+// ==================== SymPoly Class ====================
+class SymPoly {
+    constructor(degree = 0) {
+        this.degree = degree;
+        this.terms = {};
+    }
+
+    addSymmetricTerm(i, j, k, coeff) {
+        if (coeff === 0) return;
+        const perm = [[0,1,2],[0,2,1],[1,0,2],[1,2,0],[2,0,1],[2,1,0]];
+        for (let p = 0; p < 6; ++p) {
+            const exp = [0, 0, 0];
+            exp[perm[p][0]] = i; exp[perm[p][1]] = j; exp[perm[p][2]] = k;
+            const key = expKey(exp);
+            this.terms[key] = (this.terms[key] || 0) + coeff;
+        }
+    }
+
+    outputExpanded() {
+        return printPoly(this.terms);
+    }
+
+    outputSymmetric() {
+        const parts = enumeratePartitions(this.degree);
+        let result = '';
+        let first = true;
+        for (const [i, j, k] of parts) {
+            const exp = [i, j, k];
+            const key = expKey(exp);
+            const c = this.terms[key] || 0;
+            const occ = countOccurrences(i, j, k);
+            if (occ === 0) continue;
+            const symCoeff = Math.floor(c / occ);
+            if (symCoeff === 0) continue;
+            const mono = monomialToString(i, j, k);
+            if (first) {
+                if (symCoeff < 0) result += '-';
+                if (absInt(symCoeff) !== 1) result += absInt(symCoeff) + '*';
+                result += `sum_sym(${mono})`;
+                first = false;
+            } else {
+                if (symCoeff > 0) result += ' + '; else result += ' - ';
+                if (absInt(symCoeff) !== 1) result += absInt(symCoeff) + '*';
+                result += `sum_sym(${mono})`;
+            }
+        }
+        if (first) result = '0';
+        return result;
+    }
+
+    toLaTeXExpanded() {
+        return polyToLaTeX(this.terms);
+    }
+
+    toLaTeXSymmetric() {
+        const parts = enumeratePartitions(this.degree);
+        let res = '';
+        let first = true;
+        for (const [i, j, k] of parts) {
+            const exp = [i, j, k];
+            const key = expKey(exp);
+            const c = this.terms[key] || 0;
+            const occ = countOccurrences(i, j, k);
+            if (occ === 0) continue;
+            const symCoeff = Math.floor(c / occ);
+            if (symCoeff === 0) continue;
+            const mono = monomialToLaTeX(i, j, k);
+            if (first) {
+                if (symCoeff < 0) res += '-';
+                if (absInt(symCoeff) !== 1) res += absInt(symCoeff);
+                res += `\\sum_{\\mathrm{sym}}${mono}`;
+                first = false;
+            } else {
+                if (symCoeff > 0) res += '+'; else res += '-';
+                if (absInt(symCoeff) !== 1) res += absInt(symCoeff);
+                res += `\\sum_{\\mathrm{sym}}${mono}`;
+            }
+        }
+        if (first) res = '0';
+        return res;
+    }
+
+    add(other) {
+        if (this.degree !== other.degree) {
+            showToast(g_chinese ? '错误：次数不同，无法相加！' : 'Error: degrees differ, cannot add!', 'error');
+            return new SymPoly();
+        }
+        const res = new SymPoly(this.degree);
+        res.terms = { ...this.terms };
+        for (const [k, v] of Object.entries(other.terms)) {
+            res.terms[k] = (res.terms[k] || 0) + v;
+        }
+        return res;
+    }
+
+    sub(other) {
+        if (this.degree !== other.degree) {
+            showToast(g_chinese ? '错误：次数不同，无法相减！' : 'Error: degrees differ, cannot subtract!', 'error');
+            return new SymPoly();
+        }
+        const res = new SymPoly(this.degree);
+        res.terms = { ...this.terms };
+        for (const [k, v] of Object.entries(other.terms)) {
+            res.terms[k] = (res.terms[k] || 0) - v;
+        }
+        return res;
+    }
+
+    mul(other) {
+        const res = new SymPoly(this.degree + other.degree);
+        for (const [k1, v1] of Object.entries(this.terms)) {
+            if (v1 === 0) continue;
+            const e1 = k1.split(',').map(Number);
+            for (const [k2, v2] of Object.entries(other.terms)) {
+                if (v2 === 0) continue;
+                const e2 = k2.split(',').map(Number);
+                const exp = [e1[0] + e2[0], e1[1] + e2[1], e1[2] + e2[2]];
+                const key = expKey(exp);
+                res.terms[key] = (res.terms[key] || 0) + v1 * v2;
+            }
+        }
+        return res;
+    }
+
+    computeSOS() {
+        const Sa = {}, Sb = {}, Sc = {};
+        const n = this.degree;
+        if (n < 2) return { success: false, Sa, Sb, Sc };
+
+        let sumAtOne = 0;
+        for (const v of Object.values(this.terms)) sumAtOne += v;
+        if (sumAtOne !== 0) return { success: false, Sa, Sb, Sc };
+
+        const baseExps = [];
+        for (let i = n - 2; i >= 0; --i) {
+            for (let j = Math.min(i, n - 2 - i); j >= 0; --j) {
+                const k = n - 2 - i - j;
+                if (k >= 0) {
+                    baseExps.push([i, j, k]);
+                }
+            }
+        }
+        const numVars = baseExps.length;
+        if (numVars === 0) return { success: false, Sa, Sb, Sc };
+
+        const ab2 = {};
+        ab2[expKey([2,0,0])] = 1;
+        ab2[expKey([1,1,0])] = -2;
+        ab2[expKey([0,2,0])] = 1;
+        const bc2 = {};
+        bc2[expKey([0,2,0])] = 1;
+        bc2[expKey([0,1,1])] = -2;
+        bc2[expKey([0,0,2])] = 1;
+        const ca2 = {};
+        ca2[expKey([0,0,2])] = 1;
+        ca2[expKey([1,0,1])] = -2;
+        ca2[expKey([2,0,0])] = 1;
+
+        const contrib = {};
+
+        for (let varIdx = 0; varIdx < numVars; ++varIdx) {
+            const [i, j, k] = baseExps[varIdx];
+
+            let Sa_base = {};
+            if (i === j) {
+                Sa_base[expKey([i, j, k])] = 1;
+            } else {
+                Sa_base[expKey([i, j, k])] = 1;
+                Sa_base[expKey([j, i, k])] = 1;
+            }
+
+            const Sb_base = cyclicRotate(Sa_base, 1);
+            const Sc_base = cyclicRotate(Sa_base, 2);
+
+            const t1 = polyMultiply(Sa_base, ab2);
+            const t2 = polyMultiply(Sb_base, bc2);
+            const t3 = polyMultiply(Sc_base, ca2);
+            
+            const total = {};
+            for (const [k, v] of Object.entries(t1)) total[k] = (total[k] || 0) + v;
+            for (const [k, v] of Object.entries(t2)) total[k] = (total[k] || 0) + v;
+            for (const [k, v] of Object.entries(t3)) total[k] = (total[k] || 0) + v;
+
+            for (const [k, v] of Object.entries(total)) {
+                if (v === 0) continue;
+                if (!contrib[k]) contrib[k] = new Array(numVars).fill(0);
+                contrib[k][varIdx] += v;
+            }
+        }
+
+        const allExps = [];
+        for (const k of Object.keys(this.terms)) {
+            if (this.terms[k] !== 0) allExps.push(k);
+        }
+        for (const k of Object.keys(contrib)) {
+            if (!allExps.includes(k)) allExps.push(k);
+        }
+
+        const numEqs = allExps.length;
+        const A = Array(numEqs).fill(null).map(() => Array(numVars).fill(0));
+        const b = Array(numEqs).fill(0);
+        for (let eq = 0; eq < numEqs; ++eq) {
+            const exp = allExps[eq];
+            if (this.terms[exp] !== undefined) b[eq] = this.terms[exp];
+            if (contrib[exp]) {
+                for (let varIdx = 0; varIdx < numVars; ++varIdx) {
+                    A[eq][varIdx] = contrib[exp][varIdx];
+                }
+            }
+        }
+
+        // Gaussian elimination
+        const rows = numEqs, cols = numVars;
+        const mat = Array(rows).fill(null).map(() => Array(cols + 1).fill(0));
+        for (let r = 0; r < rows; ++r) {
+            for (let c = 0; c < cols; ++c) mat[r][c] = A[r][c];
+            mat[r][cols] = b[r];
+        }
+        let rank = 0;
+        const pivotCol = Array(rows).fill(-1);
+        for (let c = 0; c < cols && rank < rows; ++c) {
+            let maxRow = rank;
+            for (let r = rank + 1; r < rows; ++r) {
+                if (Math.abs(mat[r][c]) > Math.abs(mat[maxRow][c])) maxRow = r;
+            }
+            if (Math.abs(mat[maxRow][c]) < 1e-9) continue;
+            [mat[rank], mat[maxRow]] = [mat[maxRow], mat[rank]];
+            const div = mat[rank][c];
+            for (let j = c; j <= cols; ++j) mat[rank][j] /= div;
+            for (let r = 0; r < rows; ++r) {
+                if (r !== rank && Math.abs(mat[r][c]) > 1e-9) {
+                    const factor = mat[r][c];
+                    for (let j = c; j <= cols; ++j) mat[r][j] -= factor * mat[rank][j];
+                }
+            }
+            pivotCol[rank] = c;
+            ++rank;
+        }
+        for (let r = rank; r < rows; ++r) {
+            if (Math.abs(mat[r][cols]) > 1e-6) return { success: false, Sa, Sb, Sc };
+        }
+
+        const sol = Array(cols).fill(0);
+        for (let r = 0; r < rank; ++r) {
+            if (pivotCol[r] !== -1) sol[pivotCol[r]] = mat[r][cols];
+        }
+
+        for (let varIdx = 0; varIdx < numVars; ++varIdx) {
+            if (Math.abs(sol[varIdx]) < 1e-9) continue;
+            const val = Math.round(sol[varIdx]);
+            const [i, j, k] = baseExps[varIdx];
+            if (i === j) {
+                const key = expKey([i, j, k]);
+                Sa[key] = (Sa[key] || 0) + val;
+            } else {
+                const key1 = expKey([i, j, k]);
+                const key2 = expKey([j, i, k]);
+                Sa[key1] = (Sa[key1] || 0) + val;
+                Sa[key2] = (Sa[key2] || 0) + val;
+            }
+        }
+        const SbRot = cyclicRotate(Sa, 1);
+        const ScRot = cyclicRotate(Sa, 2);
+        Object.assign(Sb, SbRot);
+        Object.assign(Sc, ScRot);
+        return { success: true, Sa, Sb, Sc };
+    }
+
+    verifySOS(Sa, Sb, Sc) {
+        const ab2 = {};
+        ab2[expKey([2,0,0])] = 1;
+        ab2[expKey([1,1,0])] = -2;
+        ab2[expKey([0,2,0])] = 1;
+        const bc2 = {};
+        bc2[expKey([0,2,0])] = 1;
+        bc2[expKey([0,1,1])] = -2;
+        bc2[expKey([0,0,2])] = 1;
+        const ca2 = {};
+        ca2[expKey([0,0,2])] = 1;
+        ca2[expKey([1,0,1])] = -2;
+        ca2[expKey([2,0,0])] = 1;
+
+        const t1 = polyMultiply(Sa, ab2);
+        const t2 = polyMultiply(Sb, bc2);
+        const t3 = polyMultiply(Sc, ca2);
+        
+        const total = {};
+        for (const [k, v] of Object.entries(t1)) total[k] = (total[k] || 0) + v;
+        for (const [k, v] of Object.entries(t2)) total[k] = (total[k] || 0) + v;
+        for (const [k, v] of Object.entries(t3)) total[k] = (total[k] || 0) + v;
+
+        const diff = {};
+        for (const [k, v] of Object.entries(this.terms)) diff[k] = (diff[k] || 0) + v;
+        for (const [k, v] of Object.entries(total)) diff[k] = (diff[k] || 0) - v;
+        for (const v of Object.values(diff)) {
+            if (v !== 0) return false;
+        }
+        return true;
+    }
+
+    sosDecompose() {
+        const { success, Sa, Sb, Sc } = this.computeSOS();
+        if (!success) {
+            return { success: false, message: g_chinese ? 'SOS 分解失败（可能不满足 F(1,1,1)=0 或方程组无解）' : 'SOS decomposition failed' };
+        }
+        const verified = this.verifySOS(Sa, Sb, Sc);
+        return {
+            success: true,
+            Sa: printPoly(Sa),
+            Sb: printPoly(Sb),
+            Sc: printPoly(Sc),
+            verified: verified
+        };
+    }
+
+    sosToLaTeX() {
+        const { success, Sa, Sb, Sc } = this.computeSOS();
+        if (!success) {
+            return g_chinese ? '\\text{SOS 分解失败}' : '\\text{SOS decomposition failed}';
+        }
+        let res = '';
+        res += 'F = S_a(a-b)^2 + S_b(b-c)^2 + S_c(c-a)^2 \\\\\n';
+        res += '\\quad = \\sum_{\\mathrm{cyc}} S_a (a-b)^2 \\\\\n';
+        res += 'S_a = ' + polyToLaTeX(Sa) + ' \\\\\n';
+        res += 'S_b = ' + polyToLaTeX(Sb) + ' \\\\\n';
+        res += 'S_c = ' + polyToLaTeX(Sc);
+        return res;
+    }
+}
+
+// ==================== Global State ====================
+const polys = {};
+let currentOpType = null;
+
+// ==================== UI Functions ====================
+function showToast(message, type = 'success') {
+    const toast = document.getElementById('toast');
+    const icon = document.getElementById('toast-icon');
+    const msg = document.getElementById('toast-message');
+    
+    msg.textContent = message;
+    icon.className = type === 'success' ? 'fas fa-check-circle text-green-400 text-xl' : 'fas fa-exclamation-circle text-red-400 text-xl';
+    
+    toast.classList.remove('hidden');
+    toast.classList.add('flex');
+    
+    setTimeout(() => {
+        toast.classList.add('hidden');
+        toast.classList.remove('flex');
+    }, 3000);
+}
+
+function showPanel(panelName) {
+    const panels = ['new', 'input', 'ops', 'sos', 'latex', 'display', 'list', 'welcome'];
+    panels.forEach(p => {
+        const elem = document.getElementById(`panel-${p}`);
+        if (elem) elem.classList.add('hidden');
+    });
+    const target = document.getElementById(`panel-${panelName}`);
+    if (target) {
+        target.classList.remove('hidden');
+        target.classList.add('fade-in');
+    }
+}
+
+function createPolynomial() {
+    const name = document.getElementById('new-name').value.trim();
+    const degree = parseInt(document.getElementById('new-degree').value);
+    
+    if (!name) {
+        showToast(g_chinese ? '请输入多项式名称' : 'Please enter polynomial name', 'error');
+        return;
+    }
+    if (isNaN(degree) || degree < 0) {
+        showToast(g_chinese ? '请输入有效的次数' : 'Please enter valid degree', 'error');
+        return;
+    }
+    
+    polys[name] = new SymPoly(degree);
+    showToast(g_chinese ? `已创建多项式 ${name}（次数 ${degree}）` : `Created polynomial ${name} (degree ${degree})`);
+    document.getElementById('new-name').value = '';
+    document.getElementById('new-degree').value = '';
+}
+
+function generateInputFields() {
+    const degree = parseInt(document.getElementById('input-degree').value);
+    if (isNaN(degree) || degree < 0) return;
+    
+    const parts = enumeratePartitions(degree);
+    const container = document.getElementById('input-coefficients');
+    container.innerHTML = '';
+    
+    parts.forEach(([i, j, k]) => {
+        const mono = monomialToString(i, j, k);
+        const div = document.createElement('div');
+        div.className = 'flex items-center gap-3';
+        div.innerHTML = `
+            <label class="text-sm font-mono flex-1">sum_sym(${mono})</label>
+            <input type="number" data-i="${i}" data-j="${j}" data-k="${k}" class="coeff-input w-32 glass-dark rounded-lg px-3 py-2 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-accent-400" placeholder="0">
+        `;
+        container.appendChild(div);
+    });
+}
+
+function inputPolynomial() {
+    const name = document.getElementById('input-name').value.trim();
+    const degree = parseInt(document.getElementById('input-degree').value);
+    
+    if (!name) {
+        showToast(g_chinese ? '请输入多项式名称' : 'Please enter polynomial name', 'error');
+        return;
+    }
+    if (isNaN(degree) || degree < 0) {
+        showToast(g_chinese ? '请输入有效的次数' : 'Please enter valid degree', 'error');
+        return;
+    }
+    
+    const p = new SymPoly(degree);
+    const inputs = document.querySelectorAll('.coeff-input');
+    inputs.forEach(input => {
+        const i = parseInt(input.dataset.i);
+        const j = parseInt(input.dataset.j);
+        const k = parseInt(input.dataset.k);
+        const coeff = parseInt(input.value) || 0;
+        if (coeff !== 0) {
+            p.addSymmetricTerm(i, j, k, coeff);
+        }
+    });
+    
+    polys[name] = p;
+    showToast(g_chinese ? `多项式 ${name} 已保存` : `Polynomial ${name} saved`);
+    document.getElementById('input-name').value = '';
+    document.getElementById('input-degree').value = '';
+    document.getElementById('input-coefficients').innerHTML = '';
+}
+
+function setOpType(type) {
+    currentOpType = type;
+    document.getElementById('op-form').classList.remove('hidden');
+    
+    const buttons = ['assign', 'add', 'sub', 'mul'];
+    buttons.forEach(b => {
+        const btn = document.getElementById(`op-${b}-btn`);
+        btn.classList.remove('bg-white/20');
+    });
+    document.getElementById(`op-${type}-btn`).classList.add('bg-white/20');
+    
+    const src2Container = document.getElementById('op-src2-container');
+    if (type === 'assign') {
+        src2Container.classList.add('hidden');
+    } else {
+        src2Container.classList.remove('hidden');
+    }
+}
+
+function executeOp() {
+    const dest = document.getElementById('op-dest').value.trim();
+    const src1 = document.getElementById('op-src1').value.trim();
+    const src2 = document.getElementById('op-src2').value.trim();
+    
+    if (!dest || !src1) {
+        showToast(g_chinese ? '请填写必要字段' : 'Please fill required fields', 'error');
+        return;
+    }
+    if (!polys[src1]) {
+        showToast(g_chinese ? `多项式 ${src1} 不存在` : `Polynomial ${src1} not found`, 'error');
+        return;
+    }
+    
+    if (currentOpType === 'assign') {
+        polys[dest] = new SymPoly(polys[src1].degree);
+        polys[dest].terms = { ...polys[src1].terms };
+        showToast(g_chinese ? `完成: ${dest} = ${src1}` : `Done: ${dest} = ${src1}`);
+    } else {
+        if (!polys[src2]) {
+            showToast(g_chinese ? `多项式 ${src2} 不存在` : `Polynomial ${src2} not found`, 'error');
+            return;
+        }
+        if (currentOpType === 'add') {
+            polys[dest] = polys[src1].add(polys[src2]);
+            showToast(g_chinese ? `完成: ${dest} = ${src1} + ${src2}` : `Done: ${dest} = ${src1} + ${src2}`);
+        } else if (currentOpType === 'sub') {
+            polys[dest] = polys[src1].sub(polys[src2]);
+            showToast(g_chinese ? `完成: ${dest} = ${src1} - ${src2}` : `Done: ${dest} = ${src1} - ${src2}`);
+        } else if (currentOpType === 'mul') {
+            polys[dest] = polys[src1].mul(polys[src2]);
+            showToast(g_chinese ? `完成: ${dest} = ${src1} * ${src2}` : `Done: ${dest} = ${src1} * ${src2}`);
+        }
+    }
+    
+    document.getElementById('op-dest').value = '';
+    document.getElementById('op-src1').value = '';
+    document.getElementById('op-src2').value = '';
+}
+
+function decomposeSOS() {
+    const name = document.getElementById('sos-name').value.trim();
+    if (!name || !polys[name]) {
+        showToast(g_chinese ? '多项式不存在' : 'Polynomial not found', 'error');
+        return;
+    }
+    
+    const result = polys[name].sosDecompose();
+    const outputDiv = document.getElementById('sos-output');
+    const resultDiv = document.getElementById('sos-result');
+    
+    if (!result.success) {
+        outputDiv.innerHTML = `<p class="text-red-300">${result.message}</p>`;
+    } else {
+        let html = '';
+        html += `<p class="mb-2"><span class="text-white/60">展开式:</span> ${polys[name].outputExpanded()}</p>`;
+        html += `<p class="mb-2 text-orange-300">S_a = ${result.Sa}</p>`;
+        html += `<p class="mb-2 text-orange-300">S_b = ${result.Sb}</p>`;
+        html += `<p class="mb-2 text-orange-300">S_c = ${result.Sc}</p>`;
+        if (result.verified) {
+            html += `<p class="text-green-300"><i class="fas fa-check-circle mr-1"></i>${g_chinese ? '验证通过：F = S_a(a-b)² + S_b(b-c)² + S_c(c-a)²' : 'Verified: F = S_a(a-b)² + S_b(b-c)² + S_c(c-a)²'}</p>`;
+        } else {
+            html += `<p class="text-red-300"><i class="fas fa-exclamation-triangle mr-1"></i>${g_chinese ? '警告：验证失败' : 'Warning: verification failed'}</p>`;
+        }
+        outputDiv.innerHTML = html;
+    }
+    
+    resultDiv.classList.remove('hidden');
+}
+
+function outputLaTeX(type) {
+    const name = document.getElementById('latex-name').value.trim();
+    if (!name || !polys[name]) {
+        showToast(g_chinese ? '多项式不存在' : 'Polynomial not found', 'error');
+        return;
+    }
+    
+    let latex = '';
+    if (type === 1) {
+        latex = 'F = ' + polys[name].toLaTeXExpanded();
+    } else if (type === 2) {
+        latex = 'F = ' + polys[name].toLaTeXSymmetric();
+    } else if (type === 3) {
+        latex = polys[name].sosToLaTeX();
+    } else {
+        latex = '% Expanded form\nF = ' + polys[name].toLaTeXExpanded() + '\n\n';
+        latex += '% Symmetric-sum form\nF = ' + polys[name].toLaTeXSymmetric() + '\n\n';
+        latex += '% SOS decomposition\n' + polys[name].sosToLaTeX();
+    }
+    
+    document.getElementById('latex-output').textContent = latex;
+    document.getElementById('latex-result').classList.remove('hidden');
+    
+    // Auto copy to clipboard
+    navigator.clipboard.writeText(latex).then(() => {
+        showToast(g_chinese ? 'LaTeX 已复制到剪贴板' : 'LaTeX copied to clipboard');
+    }).catch(() => {
+        showToast(g_chinese ? '复制失败，请手动复制' : 'Copy failed, please copy manually', 'error');
+    });
+}
+
+function copyLaTeX() {
+    const latex = document.getElementById('latex-output').textContent;
+    navigator.clipboard.writeText(latex).then(() => {
+        showToast(g_chinese ? '已复制到剪贴板' : 'Copied to clipboard');
+    }).catch(() => {
+        showToast(g_chinese ? '复制失败' : 'Copy failed', 'error');
+    });
+}
+
+function displayPolynomial() {
+    const name = document.getElementById('display-name').value.trim();
+    if (!name || !polys[name]) {
+        showToast(g_chinese ? '多项式不存在' : 'Polynomial not found', 'error');
+        return;
+    }
+    
+    const p = polys[name];
+    const outputDiv = document.getElementById('display-output');
+    const resultDiv = document.getElementById('display-result');
+    
+    let html = '';
+    html += `<p class="mb-2"><span class="text-white/60">${g_chinese ? '名称' : 'Name'}:</span> ${name}</p>`;
+    html += `<p class="mb-2"><span class="text-white/60">${g_chinese ? '次数' : 'Degree'}:</span> ${p.degree}</p>`;
+    html += `<p class="mb-2"><span class="text-white/60">${g_chinese ? '展开式' : 'Expanded'}:</span> ${p.outputExpanded()}</p>`;
+    html += `<p class="mb-2"><span class="text-white/60">${g_chinese ? '对称和形式' : 'Symmetric-sum'}:</span> ${p.outputSymmetric()}</p>`;
+    
+    outputDiv.innerHTML = html;
+    resultDiv.classList.remove('hidden');
+}
+
+function listPolynomials() {
+    showPanel('list');
+    const outputDiv = document.getElementById('list-output');
+    
+    const names = Object.keys(polys);
+    if (names.length === 0) {
+        outputDiv.innerHTML = `<p class="text-white/60 text-center py-8">${g_chinese ? '当前没有任何多项式' : 'No polynomials yet'}</p>`;
+        return;
+    }
+    
+    let html = '';
+    names.forEach(name => {
+        const p = polys[name];
+        html += `
+            <div class="glass-dark rounded-xl p-4 flex items-center justify-between hover:bg-white/20 transition-all">
+                <div>
+                    <span class="font-semibold text-lg">${name}</span>
+                    <span class="text-white/60 ml-3">${g_chinese ? '次数' : 'degree'}: ${p.degree}</span>
+                </div>
+                <div class="text-sm text-white/60 font-mono">${p.outputExpanded().substring(0, 60)}${p.outputExpanded().length > 60 ? '...' : ''}</div>
+            </div>
+        `;
+    });
+    outputDiv.innerHTML = html;
+}
+
+// ==================== Event Listeners ====================
+document.getElementById('langToggle').addEventListener('click', () => {
+    g_chinese = !g_chinese;
+    updateLanguage();
+});
+
+document.getElementById('input-degree').addEventListener('input', generateInputFields);
+
+// Initialize
+updateLanguage();
+</script>
+
+</body>
+</html>
